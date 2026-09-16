@@ -1,0 +1,82 @@
+services:
+
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    container_name: proxy
+    volumes:
+      - ./proxy.py:/app/main.py
+    ports:
+      - 5555:5555
+      - 5556:5556
+
+  publisher-hora:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    volumes:
+      - ./publisher_hora.py:/app/main.py
+    depends_on:
+      - proxy
+    deploy:
+      replicas: 1
+
+  publisher-numero:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    volumes:
+      - ./publisher_numero.py:/app/main.py
+    depends_on:
+      - proxy
+    deploy:
+      replicas: 1
+
+  subscriber-hora:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    volumes:
+      - ./subscriber.py:/app/main.py
+    environment:
+      NAME: subscriber-hora
+      TOPICS: hora
+    depends_on:
+      - proxy
+    deploy:
+      replicas: 1
+
+  subscriber-numero:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    volumes:
+      - ./subscriber.py:/app/main.py
+    environment:
+      NAME: subscriber-numero
+      TOPICS: numero
+    depends_on:
+      - proxy
+    deploy:
+      replicas: 1
+
+  subscriber-ambos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cc7261:pyzmq
+    volumes:
+      - ./subscriber.py:/app/main.py
+    environment:
+      NAME: subscriber-ambos
+      TOPICS: hora,numero
+    depends_on:
+      - proxy
+    deploy:
+      replicas: 1
